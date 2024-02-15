@@ -1,0 +1,111 @@
+<html>
+
+<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+<link href="/static/style.css" rel="stylesheet" />
+
+<h1>{{ .Name }}</h1>
+<video id="video" width="600" type="video/mp4;" muted></video>
+
+<audio id="audio" muted></audio>
+
+<span id="time">0:0:0</span>
+<input type="range" width="600" id="progress" min="0" max="0" />
+<input type="range" width="600" id="volume" value="1" min="0" max="1" step="0.1" />
+
+<button id="play">Play</button>
+
+<script defer>
+    function getTime(sec) {
+        var sec_num = parseInt(sec, 10)
+        var hours = Math.floor(sec_num / 3600)
+        var minutes = Math.floor(sec_num / 60) % 60
+        var seconds = sec_num % 60
+        return [hours, minutes, seconds]
+            .map(v => (v < 10 ? '0' + v : v))
+            .filter((v, i) => v !== '00' || i > 0)
+            .join(':')
+    }
+
+    window.onload = async function () {
+        let video = document.getElementById('video')
+        let audio = document.getElementById('audio')
+        let playBtn = document.getElementById('play')
+        let time = document.getElementById('time')
+        let progress = document.getElementById('progress')
+        let volume = document.getElementById('volume')
+
+        await Promise.all([
+            new Promise((res, rej) => {
+                video.src = '/stream/{{.Name}}'
+                video.addEventListener(
+                    'loadeddata',
+                    function () {
+                        console.log('loaded video')
+                        console.log(video.duration)
+                        progress.max = video.duration
+                        // var hours = Math.floor(seconds / 3600) // Получаем количество часов
+                        // var minutes = Math.floor((seconds % 3600) / 60) // Получаем количество минут
+                        // var remainingSeconds = seconds % 60 // Получаем оставшиеся секунды
+                        // hours + " ч " + minutes + " мин " + remainingSeconds + " сек"
+                        res()
+                    },
+                    false
+                )
+            }),
+            new Promise((res, rej) => {
+                audio.src = '/stream/audio_2.mp3'
+                audio.addEventListener(
+                    'loadeddata',
+                    function () {
+                        console.log('loaded audio')
+                        res()
+                    },
+                    false
+                )
+            }),
+        ])
+
+        console.log('LOADS')
+
+        video.addEventListener('timeupdate', e => {
+            time.textContent = getTime(e.target.currentTime)
+            fetch('http://127.0.0.1:8080/time', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: 'IronMan',
+                    audio: 'audio_2',
+                    time: e.target.currentTime,
+                }),
+            })
+        })
+
+        progress.addEventListener('input', function (e) {
+            time.textContent = getTime(e.target.value)
+            video.currentTime = e.target.value
+            audio.currentTime = e.target.value
+            setTimeout(() => {
+                audio.currentTime = video.currentTime
+            }, 1000)
+        })
+
+        volume.addEventListener('input', function (e) {
+            console.log(e.target.value)
+            audio.volume = e.target.value
+        })
+
+        playBtn.addEventListener('click', function (e) {
+            if (e.target.textContent == 'Play') {
+                e.target.textContent = 'Pause'
+                video.play()
+                audio.muted = false
+                audio.play()
+            } else {
+                e.target.textContent = 'Play'
+                video.pause()
+                audio.pause()
+            }
+        })
+    }
+</script>
+
+</html>
