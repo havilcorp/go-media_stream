@@ -1,22 +1,31 @@
 {{define "header"}}
 
 <head>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <link href="/static/style.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="/static/images/favicon.ico">
+    <link href="/static/styles/main.css" rel="stylesheet" />
     <link href='https://fonts.googleapis.com/css?family=Exo 2' rel='stylesheet'>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"
-        integrity="sha512-NQfB/bDaB8kaSXF8E77JjhHG5PM6XVRxvHzkZiwl3ddWCEPBa23T76MuWSwAJdMGJnmQqM0VeY9kFszsrBEFrQ=="
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="/static/js/main.js"></script>
+    <script src="/static/js/upload.js"></script>
 </head>
 
 <header>
     <div class="row gap">
-        <span>Main</span>
-        <span>Upload</span>
+        <a href="/"><span>Main</span></a>
+        <a href="/upload"><span>Upload</span></a>
         <span>Profile</span>
+        <button onclick="signOut()">signOut</button>
     </div>
 </header>
+
+<script>
+    function signOut() {
+        if (confirm("Вы действительно хотите выйти?")) {
+            document.cookie = "Bearer" + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+            window.location.href = "/auth"
+        }
+    }
+</script>
 
 <style>
     header {

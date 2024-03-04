@@ -1,0 +1,97 @@
+.box {
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.box div {
+	width: 400px;
+	height: 300px;
+	/* border: 2px dashed #7c559f; */
+	border-radius: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #7c559f;
+	cursor: pointer;
+}
+
+.add_item_block {
+	aspect-ratio: 1 / 1;
+	background-color: #7c559f24;
+	border: 2px dashed #7c559f24;
+	border-radius: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 220px;
+	cursor: pointer;
+}
+
+.files {
+	flex-wrap: wrap;
+}
+
+.img_add_files {
+	width: 70px;
+	cursor: pointer;
+}
+
+.upload_file {
+	width: 200px;
+	/* height: 250px; */
+	min-width: 100px;
+	background-color: #ffffff;
+	border-radius: 10px;
+	padding: 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	position: relative;
+}
+
+.upload_file span {
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.upload_file .image {
+	aspect-ratio: 1 / 1;
+	/* background-color: aquamarine; */
+	border-radius: 5px;
+	cursor: pointer;
+	border: 1px dashed lightgray;
+	background-image: url('/static/images/img-prel-3.png');
+	background-size: 60px;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.upload_file input[type='text'] {
+	padding: 5;
+	border-radius: 5px;
+	outline: none;
+	border: 1px dashed lightgray;
+	text-align: center;
+}
+
+.btn_del {
+	position: absolute;
+	top: -8;
+	right: -8;
+	width: 20px;
+	height: 20px;
+	cursor: pointer;
+}
+
+.btn_send {
+	padding: 10px;
+	background-color: aqua;
+	border-radius: 10px;
+	outline: none;
+	border: none;
+	cursor: pointer;
+	text-align: center;
+}

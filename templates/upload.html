@@ -1,5 +1,11 @@
 <html>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"
+    integrity="sha512-NQfB/bDaB8kaSXF8E77JjhHG5PM6XVRxvHzkZiwl3ddWCEPBa23T76MuWSwAJdMGJnmQqM0VeY9kFszsrBEFrQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<link href="/static/styles/upload.css" rel="stylesheet" />
+
 {{template "header" .}}
 
 <div class="contant row" style="width: 100%;">
@@ -7,7 +13,7 @@
         <div id="load_image_block" class="box">
             <div onclick="document.getElementById('upload_files').click()">
                 <div class="column gap">
-                    <img class="image" style="width: 100px;" src="/static/img-preloader.png" alt="">
+                    <img class="image" style="width: 100px;" src="/static/images/img-preloader.png" alt="">
                     <span style="font-size: 1.2em; color: #ffffff;">Нажмите или перетащите файл</span>
                 </div>
             </div>
@@ -29,182 +35,70 @@
 
 {{template "footer" .}}
 
-<style>
-    .box {
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .box div {
-        width: 400px;
-        height: 300px;
-        /* border: 2px dashed #7c559f; */
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #7c559f;
-        cursor: pointer;
-    }
-
-    .add_item_block {
-        aspect-ratio: 1 / 1;
-        background-color: #7c559f24;
-        border: 2px dashed #7c559f24;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 220px;
-        cursor: pointer;
-    }
-
-    .files {
-        flex-wrap: wrap;
-    }
-
-    .img_add_files {
-        width: 70px;
-        cursor: pointer;
-    }
-
-    .upload_file {
-        width: 200px;
-        /* height: 250px; */
-        min-width: 100px;
-        background-color: #ffffff;
-        border-radius: 10px;
-        padding: 10px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        position: relative;
-    }
-
-    .upload_file span {
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        overflow: hidden;
-    }
-
-
-    .upload_file .image {
-        aspect-ratio: 1 / 1;
-        /* background-color: aquamarine; */
-        border-radius: 5px;
-        cursor: pointer;
-        border: 1px dashed lightgray;
-        background-image: url("/static/img-prel-3.png");
-        background-size: 60px;
-        background-repeat: no-repeat;
-        background-position: center;
-    }
-
-    .upload_file input[type="text"] {
-        padding: 5;
-        border-radius: 5px;
-        outline: none;
-        border: 1px dashed lightgray;
-        text-align: center;
-    }
-
-    .btn_del {
-        position: absolute;
-        top: -8;
-        right: -8;
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-    }
-
-    .btn_send {
-        padding: 10px;
-        background-color: aqua;
-        border-radius: 10px;
-        outline: none;
-        border: none;
-        cursor: pointer;
-        text-align: center;
-    }
-</style>
-
 <script defer>
     window.onload = async function () {
-        let loadImageBlock = document.getElementById('load_image_block')
-        let imageLoadedBlock = document.getElementById('image_loaded_block')
-        let uploadFiles = document.getElementById('upload_files')
-        let uploadBtn = document.getElementById('upload_btn')
-        let files = document.getElementById('files')
-        let fileCount = document.getElementById('file_count')
-        let films = []
+        const elemLoadImageBlock = document.getElementById('load_image_block')
+        const elemImageLoadedBlock = document.getElementById('image_loaded_block')
+        const elemUploadFiles = document.getElementById('upload_files')
+        const elemUploadBtn = document.getElementById('upload_btn')
+        const elemFiles = document.getElementById('files')
+        const elemFileCount = document.getElementById('file_count')
 
-        uploadFiles.addEventListener('change', function (e) {
-            loadImageBlock.style.display = "none"
-            imageLoadedBlock.style.display = "flex"
+        let filesInPage = []
+
+        elemUploadFiles.addEventListener('change', function (e) {
+            elemLoadImageBlock.style.display = "none"
+            elemImageLoadedBlock.style.display = "flex"
             document.querySelectorAll(".file_item").forEach(el => el.remove())
-            films = Array.from(e.target.files)
-            fileCount.textContent = films.length
-            for (let i = 0; i < films.length; i++) {
-                let div = document.createElement("div")
-                div.classList.add("upload_file")
-                div.classList.add("file_item")
-                films[i].i = i
-
-                let btnDel = document.createElement("span")
-                btnDel.textContent = "✖️"
-                btnDel.classList.add("btn_del")
-                btnDel.addEventListener("click", function (e) {
-                    const index = films.findIndex((v) => v.i == i)
-                    films.splice(index, 1)
+            filesInPage = Array.from(e.target.files)
+            elemFileCount.textContent = filesInPage.length
+            for (let i = 0; i < filesInPage.length; i++) {
+                const name = e.target.files[i].name.split(".")[0].replace(/[^a-zA-Zа-яА-Я0-9 -]/g, '')
+                const { div, imgFile } = createUploadCard(i, name, function () {
+                    const index = filesInPage.findIndex(v => v.i == i)
+                    filesInPage.splice(index, 1)
                     div.remove()
-                    console.log(films)
-                    fileCount.textContent = films.length
-                    if (films.length == 0) {
-                        loadImageBlock.style.display = "flex"
-                        imageLoadedBlock.style.display = "none"
-                        uploadFiles.value = ""
+                    console.log(filesInPage)
+                    elemFileCount.textContent = filesInPage.length
+                    if (filesInPage.length == 0) {
+                        elemLoadImageBlock.style.display = 'flex'
+                        elemImageLoadedBlock.style.display = 'none'
+                        elemUploadFiles.value = ''
                     }
                 })
-                div.appendChild(btnDel)
-
-                const image = new Image()
-                image.classList.add("image")
-                image.src = ""
-
-                let inputImageFile = document.createElement('input')
-                inputImageFile.type = "file"
-                inputImageFile.style.display = "none"
-                image.appendChild(inputImageFile)
-                image.onclick = function () {
-                    inputImageFile.click()
-                }
-
-                div.appendChild(image)
-
-                inputImageFile.addEventListener('change', function (e) {
-                    image.src = window.URL.createObjectURL(e.target.files[0])
-                })
-
-                let name = document.createElement("input")
-                name.type = "text"
-                name.placeholder = e.target.files[i].name
-                div.appendChild(name)
-
-                files.prepend(div)
+                filesInPage[i].i = i
+                filesInPage[i].imgFile = imgFile
+                elemFiles.prepend(div)
             }
         })
 
-        uploadBtn.addEventListener("click", function (e) {
-            console.log(films)
-            let formData = new FormData()
-            formData.append('folder', window.location.pathname)
-            for (const file of films) {
-                formData.append('files', file, file.name)
-                console.log('files', file, file.name)
+        elemUploadBtn.addEventListener("click", function (e) {
+            for (const file of filesInPage) {
+                let formData = new FormData()
+                formData.append('name', document.getElementById(`file_item_name_${file.i}`).value)
+                formData.append('film', file, file.name)
+                if (file.imgFile.files.length == 1) {
+                    formData.append('preview', file.imgFile.files[0], file.imgFile.files[0].name)
+                }
+                axios.request({
+                    method: "POST",
+                    url: "/upload",
+                    data: formData,
+                    onUploadProgress: (p) => {
+                        let progress = document.getElementById(`file_item_progress_${file.i}`)
+                        progress.textContent = `Загрузка ${(p.progress * 100).toFixed(0)}%`
+                    }
+                }).then(data => {
+                    let progress = document.getElementById(`file_item_progress_${file.i}`)
+                    if (data.status == 201) {
+                        progress.textContent = 'Загружено'
+                    } else {
+                        progress.textContent = 'Ошибка'
+                    }
+                }).catch((err) => {
+                    alert(err.response.data)
+                })
             }
-            console.log(formData)
         })
     }
 </script>

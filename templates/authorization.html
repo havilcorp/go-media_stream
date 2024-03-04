@@ -1,0 +1,43 @@
+<html>
+
+{{template "header" .}}
+
+<div class="contant column gap" style="padding: 10px;">
+    <h1>Регистрация / Авторизация</h1>
+    <input id="name" type="text" name="name" placeholder="name" />
+    <input id="pass" type="text" name="password" placeholder="password" />
+    <input type="submit" value="Register" onclick="send()" />
+</div>
+
+<style>
+
+</style>
+
+<script>
+    function setCookie(cname, cvalue, exdays) {
+        const d = new Date()
+        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000))
+        let expires = "expires=" + d.toUTCString()
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/"
+    }
+    function send() {
+        const name = document.getElementById("name")
+        const pass = document.getElementById("pass")
+        console.log(name.value, pass.value)
+        fetch('', {
+            method: 'POST',
+            body: JSON.stringify({ login: name.value, password: pass.value }),
+        }).then(async (res) => {
+            console.log(res.status)
+            if (res.ok) {
+                const data = await res.json()
+                setCookie("Bearer", data.token, 10)
+                window.location.href = "/"
+            }
+        })
+    }
+</script>
+
+{{template "footer" .}}
+
+</html>

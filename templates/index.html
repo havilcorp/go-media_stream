@@ -1,85 +1,30 @@
 <html>
 
-<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-<link href="/static/style.css" rel="stylesheet" />
+{{template "header" .}}
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"
-    integrity="sha512-NQfB/bDaB8kaSXF8E77JjhHG5PM6XVRxvHzkZiwl3ddWCEPBa23T76MuWSwAJdMGJnmQqM0VeY9kFszsrBEFrQ=="
-    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<div class="contant row gap" style="padding: 10px;">
+    {{range $video := .Videos}}
 
-<div class="column gap">
-
-    <div class="row gap">
-        <div class="column gap" style="border-radius: 10px; padding: 10px; background-color: darkgrey;">
-            <button id="create_folder_btn" class="btn">Create folder</button>
-            <input id="create_folder_name" type="text">
-        </div>
-        <div class="column gap" style="border-radius: 10px; padding: 10px; background-color: darkgrey;">
-            <button id="upload_btn" class="btn">Upload</button>
-            <input id="upload_files" type="file" multiple>
-        </div>
+    <div class="column gap film-block">
+        <img style="aspect-ratio: 1 / 1; width: 100px;" src="/static/images/img-prel-2.png" />
+        <a href="/video/{{$video.Id}}">
+            <span>{{$video.Name}}</span>
+        </a>
     </div>
-
-    {{range $name, $url := .Folders}}
-    <a href="/{{$url}}">
-        <div class="folder">
-            📁 {{$name}}
-        </div>
-    </a>
-    {{end}}
-
-    {{range $name, $url := .Files}}
-    <a href="/films/{{$url}}">
-        <div class="file">
-            📄 {{$name}}
-        </div>
-    </a>
     {{end}}
 </div>
 
-<script defer>
-    window.onload = async function () {
-        let createFolderBtn = document.getElementById('create_folder_btn')
-        let createFolderName = document.getElementById('create_folder_name')
-        let uploadBtn = document.getElementById('upload_btn')
-        let uploadFiles = document.getElementById('upload_files')
-
-        createFolderBtn.addEventListener("click", () => {
-            fetch("/folder/create", {
-                method: "POST",
-                body: JSON.stringify({
-                    folder: `${window.location.pathname}/${createFolderName.value}`
-                })
-            }).then((res) => {
-                console.log(res.status)
-            })
-        })
-
-        uploadBtn.addEventListener("click", () => {
-            if (uploadFiles.files.length == 0) return
-            let formData = new FormData()
-            formData.append('folder', window.location.pathname)
-            for (const file of uploadFiles.files) {
-                formData.append('files', file, file.name)
-            }
-            axios.request({
-                method: "post",
-                url: "/folder/upload",
-                data: formData,
-                onUploadProgress: (p) => {
-                    console.log(p)
-                    uploadBtn.textContent = `Upload ${(p.progress * 100).toFixed(0)}%`
-                }
-            }).then(data => {
-                console.log(data)
-            }).catch((err) => {
-                alert(err.response.data)
-            })
-
-        })
+<style>
+    .film-block {
+        width: 100px;
+        height: 150px;
+        background-color: #7d559f7a;
+        border-radius: 10px;
+        padding: 10px;
+        align-items: center;
     }
-</script>
+</style>
 
-
+{{template "footer" .}}
 
 </html>

@@ -1,0 +1,187 @@
+<html>
+
+<script src="/static/js/video.js"></script>
+
+{{template "header" .}}
+
+<div class="contant column gap" style="padding: 10px;">
+    <h1>{{ .Video.Name }}</h1>
+    <div class="column gap" style="width: 600px;">
+        <video id="video" type="video/mp4;" muted></video>
+        <div class="row gap">
+            <button id="play">▶</button>
+            <span id="time">00:00</span>
+            <input type="range" width="600" id="timeRange" min="0" max="0" />
+            <input type="range" width="600" id="volumeRange" value="1" min="0" max="1" step="0.1" />
+            <button id="fullscreen">[]</button>
+        </div>
+        <select id="select_audio">
+            <option>Не выбрано</option>
+            {{range $audio := .Audio}}
+            {{if eq $audio.Id $.Video.SelectAudioId.Int32}}
+            <option value="{{$audio.Id}}" selected>{{$audio.Name}}</option>
+            {{else}}
+            <option value="{{$audio.Id}}">{{$audio.Name}}</option>
+            {{end}}
+            {{end}}
+        </select>
+    </div>
+
+    <audio id="audio" muted></audio>
+
+</div>
+
+<style>
+    /* video::-webkit-media-controls-mute-button {
+        display: none;
+    } */
+
+    #play {
+        width: 50px;
+    }
+
+    video::-webkit-media-controls {
+        display: none;
+    }
+
+    #video {
+        width: 600px;
+    }
+
+    #time {
+        width: 80px;
+    }
+
+    #timeRange {
+        flex: 1;
+    }
+
+    #volumeRange {
+        width: 50px;
+    }
+</style>
+
+{{template "footer" .}}
+
+<script defer>
+
+    const video = document.getElementById('video')
+    const audio = document.getElementById('audio')
+    const playBtn = document.getElementById('play')
+    const time = document.getElementById('time')
+    const timeRange = document.getElementById('timeRange')
+    const volumeRange = document.getElementById('volumeRange')
+    const btnFullscreen = document.getElementById('fullscreen')
+    const selectAudio = document.getElementById('select_audio')
+    const btnPlay = document.getElementById('play')
+
+    let isPlaying = false
+    let timePlaySec = 0
+
+    window.onload = async function () {
+
+        document.body.onkeyup = function (e) {
+            if (e.keyCode == 32) playPause()
+            if (e.keyCode == 39) addTimeOffset(10) // Right
+            if (e.keyCode == 37) addTimeOffset(-10) // Left
+        }
+
+        await Promise.all([
+            new Promise((res, rej) => {
+                addVideoSrc('/stream/video/{{.Video.Id}}', () => {
+                    timeRange.max = video.duration
+                    res()
+                    console.log("loaded video")
+                })
+            }),
+            new Promise((res, rej) => {
+                if ('{{.Video.SelectAudioId.Valid}}' == 'true') {
+                    audio.src = '/stream/audio/{{.Video.SelectAudioId.Int32}}'
+                    audio.addEventListener('loadeddata', () => {
+                        timeRange.max = video.duration
+                        res()
+                        console.log("loaded audio")
+                    }, false)
+                } else {
+                    res()
+                }
+            }),
+        ])
+
+        setTime(+'{{.Video.Time}}')
+
+        var change_time_state = true
+
+        video.onplay = function () {
+            console.log("video.onplay")
+            audio.play()
+            if (change_time_state) {
+                audio.currentTime = video.currentTime
+                change_time_state = false
+            }
+        }
+
+        video.onpause = function () {
+            audio.pause()
+            change_time_state = true
+        }
+
+        video.addEventListener('timeupdate', e => {
+            time.textContent = getTime(e.target.currentTime)
+            if (timePlaySec != Math.floor(e.target.currentTime)) {
+                timePlaySec = Math.floor(e.target.currentTime)
+                fetch('/video/{{.Video.Id}}/time', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        time: timePlaySec,
+                    }),
+                }).then((res) => {
+                    console.log(res.status)
+                })
+            }
+        })
+
+        video.addEventListener("click", () => {
+            playPause()
+        })
+
+        selectAudio.addEventListener("change", function (e) {
+            const audioId = e.target.value
+            addAudioSrc(`/stream/audio/${audioId}`, () => {
+                timeRange.max = video.duration
+                audio.currentTime = video.currentTime
+                if (isPlaying) {
+                    audio.play()
+                }
+                console.log('loaded audio')
+                fetch('/video/{{.Video.Id}}/audio', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        audio_id: +audioId,
+                    }),
+                }).then((res) => {
+                    console.log(res.status)
+                })
+            })
+        })
+
+        btnFullscreen.addEventListener('click', () => {
+            turnFullscreen(true)
+        })
+
+        timeRange.addEventListener('input', function (e) {
+            time.textContent = getTime(e.target.value)
+            setTime(e.target.value)
+        })
+
+        volumeRange.addEventListener('input', function (e) {
+            audio.volume = e.target.value
+        })
+
+        playBtn.addEventListener('click', function (e) {
+            playPause()
+        })
+    }
+</script>
+
+</html>
