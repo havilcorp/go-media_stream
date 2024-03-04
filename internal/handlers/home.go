@@ -7,17 +7,16 @@ import (
 
 	"go-media-stream/internal/domain"
 	"go-media-stream/internal/handlers/middleware"
-	"go-media-stream/internal/services"
 
 	"github.com/go-chi/chi/v5"
 )
 
 type HomeHandler struct {
-	video *services.VideoService
-	audio *services.AudioService
+	video VideoProvider
+	audio AudioProvider
 }
 
-func NewHomeHandler(video *services.VideoService, audio *services.AudioService) *HomeHandler {
+func NewHomeHandler(video VideoProvider, audio AudioProvider) *HomeHandler {
 	return &HomeHandler{
 		video: video,
 		audio: audio,

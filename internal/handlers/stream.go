@@ -9,21 +9,20 @@ import (
 
 	"go-media-stream/internal/handlers/middleware"
 	"go-media-stream/internal/log"
-	"go-media-stream/internal/services"
 
 	"github.com/go-chi/chi/v5"
 )
 
 type StreamHandler struct {
 	logger *log.Logger
-	video  *services.VideoService
-	audio  *services.AudioService
+	video  VideoProvider
+	audio  AudioProvider
 }
 
 func NewStreamHandler(
 	logger *log.Logger,
-	video *services.VideoService,
-	audio *services.AudioService,
+	video VideoProvider,
+	audio AudioProvider,
 ) *StreamHandler {
 	return &StreamHandler{
 		logger: logger,

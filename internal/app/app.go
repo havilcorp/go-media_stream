@@ -47,20 +47,17 @@ func Run() error {
 	queueRepository := repository.NewQueueRepository(db)
 
 	authService := services.NewAuthServices(userRepository)
-	videoService := services.NewVideoServices(videoRepository)
-	audioService := services.NewAudioServices(audioRepository)
 	uploadService := services.NewUploadServices(videoRepository, storeRepository, queueRepository)
 
-	// handlers := delivery.NewHandler(services, logger)
 	chiRouter := chi.NewRouter()
 	fs := http.FileServer(http.Dir("./static"))
 	chiRouter.Handle("/static/*", http.StripPrefix("/static/", fs))
 
 	handlers.NewAuthHandler(logger, authService).Register(chiRouter)
-	handlers.NewVideoHandler(videoService, audioService).Register(chiRouter)
-	handlers.NewHomeHandler(videoService, audioService).Register(chiRouter)
+	handlers.NewVideoHandler(videoRepository, audioRepository).Register(chiRouter)
+	handlers.NewHomeHandler(videoRepository, audioRepository).Register(chiRouter)
 	handlers.NewUploadHandler(uploadService).Register(chiRouter)
-	handlers.NewStreamHandler(logger, videoService, audioService).Register(chiRouter)
+	handlers.NewStreamHandler(logger, videoRepository, audioRepository).Register(chiRouter)
 
 	// handlers.RegisterVideo(chiRouter)
 	// handlers.RegisterMain(chiRouter)
