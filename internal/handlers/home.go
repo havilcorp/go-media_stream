@@ -34,12 +34,6 @@ func (h *HomeHandler) MainPage(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// jsonData, err := json.Marshal(videos)
-	// if err != nil {
-	// 	http.Error(rw, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	// rw.Write(jsonData)
 	root, err := utils.GetProjectRoot()
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)

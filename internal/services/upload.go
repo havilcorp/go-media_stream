@@ -52,5 +52,3 @@ func (s *UploadService) Upload(ctx context.Context, userId int, name string, vid
 	}
 	return nil
 }
-
-//////////

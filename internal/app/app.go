@@ -74,8 +74,6 @@ func Run() error {
 		for {
 			select {
 			case <-timeQueueTracker.C:
-				// num := runtime.NumGoroutine()
-				// fmt.Printf("Количество запущенных горутин: %d\n", num)
 				rows, err := db.QueryContext(context.Background(), `
 					SELECT id, folder, type FROM queue WHERE is_done=0 AND is_work=0
 				`)

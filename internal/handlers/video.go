@@ -49,18 +49,6 @@ func (h *VideoHandler) GetVideo(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusNotFound)
 		return
 	}
-	// jsonData, err := json.Marshal(struct {
-	// 	Video domain.Video   `json:"video"`
-	// 	Audio []domain.Audio `json:"audio"`
-	// }{
-	// 	Video: *video,
-	// 	Audio: *audio,
-	// })
-	// if err != nil {
-	// 	http.Error(rw, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	// rw.Write(jsonData)
 	root, err := utils.GetProjectRoot()
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)

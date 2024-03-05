@@ -77,31 +77,5 @@ func (h *UploadHandler) UploadFile(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// fileNameSplit := strings.Split(handler.Filename, ".")
-	// fileExt := fileNameSplit[len(fileNameSplit)-1]
-
-	// if !ok {
-	// 	http.Error(rw, errors.New("name is exists").Error(), http.StatusBadRequest)
-	// 	return
-	// }
-
-	// preview, _, err := r.FormFile("preview")
-	// if err == nil {
-	// 	defer preview.Close()
-	// 	err = h.store.SaveFile(name, "preview.jpg", preview)
-	// 	if err != nil {
-	// 		http.Error(rw, err.Error(), http.StatusBadRequest)
-	// 		return
-	// 	}
-	// } else if !errors.Is(err, http.ErrMissingFile) {
-	// 	http.Error(rw, err.Error(), http.StatusBadRequest)
-	// 	return
-	// }
-
-	// h.ff.Add(ffmpeg.JobModel{
-	// 	Name:     name,
-	// 	FileName: handler.Filename,
-	// })
-
 	rw.WriteHeader(http.StatusCreated)
 }
