@@ -24,7 +24,7 @@
                     <img style="aspect-ratio: 1 / 1; width: 60px;" src="/static/img-preloader.png" />
                 </div> -->
             </div>
-            <input id="upload_files" type="file" multiple style="display: none;">
+            <input id="upload_files" type="file" accept=".mkv,video/mp4" multiple style="display: none;">
         </div>
     </div>
     <div class="column gap padding" style="width: 250px; background-color: #7c559f;">
@@ -96,7 +96,7 @@
                         progress.textContent = 'Ошибка'
                     }
                 }).catch((err) => {
-                    alert(err.response.data)
+                    alert(err.response)
                 })
             }
         })
