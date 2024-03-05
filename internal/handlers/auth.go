@@ -9,20 +9,20 @@ import (
 
 	"go-media-stream/internal/domain"
 	"go-media-stream/internal/log"
-	"go-media-stream/internal/services"
+	"go-media-stream/internal/utils"
 
 	"github.com/go-chi/chi/v5"
 )
 
 type AuthHandler struct {
-	logger      *log.Logger
-	authService *services.AuthService
+	logger       *log.Logger
+	authProvider AuthProvider
 }
 
-func NewAuthHandler(logger *log.Logger, authService *services.AuthService) *AuthHandler {
+func NewAuthHandler(logger *log.Logger, authProvider AuthProvider) *AuthHandler {
 	return &AuthHandler{
-		logger:      logger,
-		authService: authService,
+		logger:       logger,
+		authProvider: authProvider,
 	}
 }
 
@@ -32,10 +32,15 @@ func (h *AuthHandler) Register(r *chi.Mux) {
 }
 
 func (h *AuthHandler) GetAuthPage(rw http.ResponseWriter, r *http.Request) {
+	root, err := utils.GetProjectRoot()
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	tmpl := template.Must(template.ParseFiles(
-		path.Join("templates", "authorization.html"),
-		path.Join("templates", "header.html"),
-		path.Join("templates", "footer.html"),
+		path.Join(root, "templates", "authorization.html"),
+		path.Join(root, "templates", "header.html"),
+		path.Join(root, "templates", "footer.html"),
 	))
 	if err := tmpl.Execute(rw, struct{}{}); err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
@@ -53,7 +58,7 @@ func (h *AuthHandler) Auth(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// TODO: переделать функцю на две
-	token, err := h.authService.SignUp(r.Context(), data.Login, data.Password)
+	token, err := h.authProvider.SignUp(r.Context(), data.Login, data.Password)
 	if err != nil {
 		if errors.Is(err, domain.ErrWrongPassword) {
 			http.Error(rw, err.Error(), http.StatusUnauthorized)

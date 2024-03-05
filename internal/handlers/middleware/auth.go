@@ -15,13 +15,7 @@ func JwtAuthMiddleware(next http.Handler) http.Handler {
 			http.Redirect(rw, r, "/auth", http.StatusSeeOther)
 			return
 		}
-		payload, err := utils.VerifyJWT(bearer.Value)
-		if err != nil {
-			logrus.Error(err)
-			http.Redirect(rw, r, "/auth", http.StatusSeeOther)
-			return
-		}
-		userID, err := payload.GetSubject()
+		userID, err := utils.VerifyJWT(bearer.Value)
 		if err != nil {
 			logrus.Error(err)
 			http.Redirect(rw, r, "/auth", http.StatusSeeOther)

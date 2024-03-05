@@ -41,7 +41,8 @@ func (h *UploadHandler) GetTemplateUpload(rw http.ResponseWriter, r *http.Reques
 }
 
 func (h *UploadHandler) UploadFile(rw http.ResponseWriter, r *http.Request) {
-	r.ParseMultipartForm(10 << 20)
+	const tenGB = 10 * 1024 * 1024 * 1024 // 10 ГБ
+	r.ParseMultipartForm(tenGB)
 
 	name := r.FormValue("name")
 	if name == "" {
@@ -49,12 +50,17 @@ func (h *UploadHandler) UploadFile(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	film, _, err := r.FormFile("film")
+	film, handler, err := r.FormFile("film")
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 	defer film.Close()
+
+	if handler.Size > (tenGB) {
+		http.Error(rw, errors.New("file size exceeds the limit").Error(), http.StatusBadRequest)
+		return
+	}
 
 	userId, err := strconv.Atoi(rw.Header().Get("USER_ID"))
 	if err != nil {

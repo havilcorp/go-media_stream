@@ -11,36 +11,37 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type Auther interface {
-	CreateUser(ctx context.Context, user domain.User) (int64, error)
-	GetUserByLogin(ctx context.Context, login string, password string) (domain.User, error)
-	GetUserById(ctx context.Context, id int64) (domain.User, error)
+//go:generate mockery --name AuthProvider
+type AuthProvider interface {
+	CreateUser(ctx context.Context, user *domain.User) (int64, error)
+	GetUserByLogin(ctx context.Context, login string, password string) (*domain.User, error)
+	GetUserById(ctx context.Context, id int64) (*domain.User, error)
 }
 
 type AuthService struct {
-	auth Auther
+	authProvider AuthProvider
 }
 
-func NewAuthServices(auth Auther) *AuthService {
+func NewAuthServices(authProvider AuthProvider) *AuthService {
 	return &AuthService{
-		auth: auth,
+		authProvider: authProvider,
 	}
 }
 
 func (s *AuthService) SignUp(ctx context.Context, login string, password string) (string, error) {
 	var (
-		user domain.User
+		user *domain.User
 		err  error
 	)
 	hashPassword := utils.GetMD5(password)
-	user, err = s.auth.GetUserByLogin(ctx, login, hashPassword)
+	user, err = s.authProvider.GetUserByLogin(ctx, login, hashPassword)
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
-			lastIndex, err := s.auth.CreateUser(ctx, domain.User{Login: login, Password: hashPassword})
+			lastIndex, err := s.authProvider.CreateUser(ctx, &domain.User{Login: login, Password: hashPassword})
 			if err != nil {
 				return "", err
 			}
-			user, err = s.auth.GetUserById(ctx, lastIndex)
+			user, err = s.authProvider.GetUserById(ctx, lastIndex)
 			if err != nil {
 				return "", err
 			}
@@ -51,7 +52,7 @@ func (s *AuthService) SignUp(ctx context.Context, login string, password string)
 			return "", err
 		}
 	}
-	token, err := utils.GenerateJWT(strconv.Itoa(user.ID))
+	token, err := utils.GenerateJWT(strconv.FormatInt(user.ID, 10))
 	if err != nil {
 		return "", err
 	}

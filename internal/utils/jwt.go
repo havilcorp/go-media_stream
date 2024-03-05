@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"time"
-
 	"go-media-stream/internal/domain"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -14,7 +12,6 @@ var jwtkey = []byte("very-secret-key") // TODO: JWT secret
 func GenerateJWT(userId string) (string, error) {
 	payload := jwt.MapClaims{
 		"sub": userId,
-		"exp": time.Now().Add(time.Hour * 72).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
 	t, err := token.SignedString(jwtkey)
@@ -24,7 +21,7 @@ func GenerateJWT(userId string) (string, error) {
 	return t, nil
 }
 
-func VerifyJWT(token string) (*jwt.MapClaims, error) {
+func VerifyJWT(token string) (string, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
@@ -36,7 +33,12 @@ func VerifyJWT(token string) (*jwt.MapClaims, error) {
 	_, err := jwt.ParseWithClaims(token, &payload, keyFunc)
 	if err != nil {
 		logrus.Error(err)
-		return nil, err
+		return "", err
 	}
-	return &payload, nil
+	userId, err := payload.GetSubject()
+	if err != nil {
+		logrus.Error(err)
+		return "", err
+	}
+	return userId, nil
 }

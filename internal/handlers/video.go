@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"path"
 	"strconv"
@@ -10,6 +9,7 @@ import (
 
 	"go-media-stream/internal/domain"
 	"go-media-stream/internal/handlers/middleware"
+	"go-media-stream/internal/utils"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -49,10 +49,27 @@ func (h *VideoHandler) GetVideo(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusNotFound)
 		return
 	}
+	// jsonData, err := json.Marshal(struct {
+	// 	Video domain.Video   `json:"video"`
+	// 	Audio []domain.Audio `json:"audio"`
+	// }{
+	// 	Video: *video,
+	// 	Audio: *audio,
+	// })
+	// if err != nil {
+	// 	http.Error(rw, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+	// rw.Write(jsonData)
+	root, err := utils.GetProjectRoot()
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	tmpl := template.Must(template.ParseFiles(
-		path.Join("templates", "video.html"),
-		path.Join("templates", "header.html"),
-		path.Join("templates", "footer.html"),
+		path.Join(root, "templates", "video.html"),
+		path.Join(root, "templates", "header.html"),
+		path.Join(root, "templates", "footer.html"),
 	))
 	if err := tmpl.Execute(rw, struct {
 		Video domain.Video
@@ -74,10 +91,14 @@ func (h *VideoHandler) SetTime(rw http.ResponseWriter, r *http.Request) {
 	}{}
 	err = json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
-		fmt.Println(err)
 		rw.WriteHeader(http.StatusInternalServerError)
+		return
 	}
-	h.video.SetTime(r.Context(), id, data.Time)
+	err = h.video.SetTime(r.Context(), id, data.Time)
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	rw.WriteHeader(http.StatusOK)
 }
 

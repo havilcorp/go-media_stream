@@ -4,11 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
-	"runtime"
 	"syscall"
 	"time"
 
@@ -59,11 +57,6 @@ func Run() error {
 	handlers.NewUploadHandler(uploadService).Register(chiRouter)
 	handlers.NewStreamHandler(logger, videoRepository, audioRepository).Register(chiRouter)
 
-	// handlers.RegisterVideo(chiRouter)
-	// handlers.RegisterMain(chiRouter)
-	// handlers.RegisterStream(chiRouter)
-	// handlers.RegisterUpload(chiRouter)
-
 	server := &http.Server{Addr: conf.ServerAddress, Handler: chiRouter}
 	go func() {
 		if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
@@ -71,9 +64,8 @@ func Run() error {
 		}
 	}()
 
-	numJobs := 2
 	ffmpeg := utils.NewFFMPEG(logger, db, 1)
-	ffmpeg.CreateWorkers(numJobs)
+	ffmpeg.CreateWorkers(conf.DecoderWorkerCount)
 
 	chQueueDone := make(chan struct{})
 	defer close(chQueueDone)
@@ -82,8 +74,8 @@ func Run() error {
 		for {
 			select {
 			case <-timeQueueTracker.C:
-				num := runtime.NumGoroutine()
-				fmt.Printf("Количество запущенных горутин: %d\n", num)
+				// num := runtime.NumGoroutine()
+				// fmt.Printf("Количество запущенных горутин: %d\n", num)
 				rows, err := db.QueryContext(context.Background(), `
 					SELECT id, folder, type FROM queue WHERE is_done=0 AND is_work=0
 				`)
@@ -123,7 +115,6 @@ func Run() error {
 	timeQueueTracker.Stop()
 	ffmpeg.Close()
 	ffmpeg.Wait()
-	println()
 	logrus.Info("Сервер остановлен нормально")
 	return nil
 }

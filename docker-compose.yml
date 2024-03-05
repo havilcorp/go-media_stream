@@ -1,0 +1,44 @@
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    restart: always
+    ports: 
+      - "3306:3306"
+    volumes:
+      - mysql:/var/lib/mysql
+    environment: 
+      MYSQL_DATABASE: "media_stream"
+      MYSQL_ROOT_PASSWORD: "sajo1o31"
+
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: "phpmyadmin"
+    restart: always
+    ports: 
+      - 3003:80
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      UPLOAD_LIMIT: 1024M
+      MEMORY_LIMIT: 1024M
+      MAX_EXECUTION_TIME: 300
+
+  server:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: "go-server"
+    restart: always
+    ports: 
+      - 8080:8080
+    volumes:
+      - uploads:/build/uploads
+    environment:
+      DB_CONNECT: "root:sajo1o31@tcp(mysql:3306)/media_stream?parseTime=true"
+    depends_on:
+      - mysql
+
+volumes:
+  mysql:
+  uploads:

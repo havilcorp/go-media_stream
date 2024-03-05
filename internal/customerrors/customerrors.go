@@ -5,8 +5,6 @@ import (
 	"runtime"
 )
 
-// TODO: Убрать эту структуру
-
 type mainError struct {
 	msg  string
 	err  error
@@ -49,7 +47,6 @@ func NewWithError(err error) error {
 	return e
 }
 
-// Unwrap is used to make it work with errors.Is, errors.As.
 func (e *mainError) Unwrap() error {
 	return e.err
 }

@@ -7,6 +7,7 @@ import (
 
 	"go-media-stream/internal/domain"
 	"go-media-stream/internal/handlers/middleware"
+	"go-media-stream/internal/utils"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -33,10 +34,21 @@ func (h *HomeHandler) MainPage(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	// jsonData, err := json.Marshal(videos)
+	// if err != nil {
+	// 	http.Error(rw, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+	// rw.Write(jsonData)
+	root, err := utils.GetProjectRoot()
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	tmpl := template.Must(template.ParseFiles(
-		path.Join("templates", "index.html"),
-		path.Join("templates", "header.html"),
-		path.Join("templates", "footer.html"),
+		path.Join(root, "templates", "index.html"),
+		path.Join(root, "templates", "header.html"),
+		path.Join(root, "templates", "footer.html"),
 	))
 	if err := tmpl.Execute(rw, struct{ Videos []domain.Video }{*videos}); err != nil {
 		http.Error(rw, err.Error(), http.StatusInternalServerError)

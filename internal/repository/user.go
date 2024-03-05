@@ -17,13 +17,13 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 
-func (repo *UserRepository) GetUserById(ctx context.Context, id int64) (domain.User, error) {
+func (repo *UserRepository) GetUserById(ctx context.Context, id int64) (*domain.User, error) {
 	row := repo.db.QueryRowContext(ctx, "SELECT id, login FROM users WHERE id = ?", id)
 	user := domain.User{}
 	if err := row.Scan(&user.ID, &user.Login); err != nil {
-		return domain.User{}, err
+		return nil, err
 	}
-	return user, nil
+	return &user, nil
 }
 
 func (repo *UserRepository) UserIsExists(ctx context.Context, login string) (bool, error) {
@@ -35,7 +35,7 @@ func (repo *UserRepository) UserIsExists(ctx context.Context, login string) (boo
 	return rows.Next(), nil
 }
 
-func (repo *UserRepository) CreateUser(ctx context.Context, user domain.User) (int64, error) {
+func (repo *UserRepository) CreateUser(ctx context.Context, user *domain.User) (int64, error) {
 	res, err := repo.db.ExecContext(ctx, `
 		INSERT INTO users (id, login, password) 
 		VALUES (NULL, ?, ?);
@@ -50,14 +50,14 @@ func (repo *UserRepository) CreateUser(ctx context.Context, user domain.User) (i
 	return lastId, nil
 }
 
-func (repo *UserRepository) GetUserByLogin(ctx context.Context, login string, password string) (domain.User, error) {
+func (repo *UserRepository) GetUserByLogin(ctx context.Context, login string, password string) (*domain.User, error) {
 	row := repo.db.QueryRowContext(ctx, "SELECT id, login, password FROM users WHERE login = ?", login)
 	user := domain.User{}
 	if err := row.Scan(&user.ID, &user.Login, &user.Password); err != nil {
-		return domain.User{}, domain.ErrUserNotFound
+		return nil, domain.ErrUserNotFound
 	}
 	if user.Password != password {
-		return domain.User{}, domain.ErrWrongPassword
+		return nil, domain.ErrWrongPassword
 	}
-	return user, nil
+	return &user, nil
 }
